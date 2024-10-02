@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from monitor import Scanning
+#from monitor import Scanning
 from processing import Processing
 from scipy.signal import find_peaks
 import warnings
@@ -122,7 +122,7 @@ class Detection:
 
         threshold = (noise_lvl + signal_level) / 1.5 + 0.4 * ((noise_lvl + signal_level) / 1.5)
         
-        peaks, properties = find_peaks(Pxx, height=threshold, distance=100)
+        peaks, properties = find_peaks(Pxx, height=threshold, distance=50)
 
         peak_powers = properties['peak_heights']
         peak_freqs = f[peaks]

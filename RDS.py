@@ -1,25 +1,24 @@
 import time
+import threading
 import numpy as np
 import pandas as pd 
-from monitor import Scanning
+import matplotlib.pyplot as plt
+#from monitor import Scanning
 from processing import Processing
 from detection import Detection
-from hackrf import HackRF
 
 class RDS():
 
-    def __init__(self,
-                 city: str = 'Manizales',
+    def __init__(self, 
                  vga_gain: int = 0,
                  lna_gain: int = 0,
                  sample_rate: float = 20e6,
                  overlap: int = 0,
-                 time_to_read: float = 1, 
-                 ):
-        # self.scan = Scanning(vga_gain=vga_gain, lna_gain=lna_gain, sample_rate=sample_rate, overlap=overlap, time_to_read=time_to_read)
+                 time_to_read: float = 1,):
+        #self.scan = Scanning(vga_gain=vga_gain, lna_gain=lna_gain, sample_rate=sample_rate, overlap=overlap, time_to_read=time_to_read)
         self.pros = Processing()
         self.detec = Detection()
-        self.frequencies = self.detec.broadcasters(city)
+        self.excel_file = 'Hoja de cálculo sin título (1).xlsx'
         """Initialize the RDS object with the given parameters.
 
         Parameters
@@ -36,55 +35,40 @@ class RDS():
             Duration of time to read samples in seconds (default is 1).
         """
 
-    def parameter(self, iter):
-        """The bandwidth and maximum power parameters of each radio station are calculated every second. 
-        Every 5 minutes, all the obtained parameters are averaged, and at the end of the analysis hours, 
-        the averages are averaged again.
+    #def save_to_excel(self, df, sheet_name='Hoja 1'):
+        #df = pd.DataFrame([df])  # Convertir el dato en un DataFrame de pandas
+        #try:
+            #with pd.ExcelWriter(self.excel_file, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
+                #df.to_excel(writer, sheet_name=sheet_name, index=False, header=False, startrow=writer.sheets[sheet_name].max_row)
+        #except FileNotFoundError:
+            #df.to_excel(self.excel_file, sheet_name=sheet_name, index=False)
 
-        Parameters
-        ----------
-        hours_to_scan : int
-            Total hours to analyze
-        city : str
-            
-
-        Returns
-        -------
-        parameters_prom_12h_final: dictionarie contains:
-        - 'freq': float : Frequencies for each broadcaster.
-        - 'bandwidth' : Bandwidth for each broadcaster.
-        - 'power' : power in central frequency for each broadcaster.
-
-        parameters_prom_12h: dictionarie of list contains:
-        - 'freq': float : Frequencies for each broadcaster.
-        - 'bandwidth' : Bandwidth for each broadcaster.
-        - 'power' : power in central frequency for each broadcaster.
-        """
-        
+    def parameter(self, hours_to_scan: int = 1, city: str = 'Manizales'):
+        frequencies = self.detec.broadcasters(city)
         parameters_1s = []
         parameters = []
-
-        samples = np.load(f'/home/dann99/Documentos/GitHub/python-gcpds.em_spectrum_monitor/database_prueba_piloto/Samples 88 and 108MHz, time to read 0.01s, sample #0.npy')
+        
+        sample_index = np.random.randint(0, 30)
+        samples = np.load(f'muestras_guardadas/Samples 88 and 108MHz, time to read 0.01s, sample #{sample_index}.npy')
 
         f, Pxx = self.pros.welch(samples, fs=20e6)
         f = np.linspace(88, 108, len(Pxx))
-        
-        noise_lvl = self.detec.power_based_detection(f, Pxx)  
 
-        for j in range(len(self.frequencies)):
+        _, _, noise_lvl, _ = self.detec.power_based_detection(f, Pxx)
 
-            f_start, f_end = self.detec.bandwidth(f, Pxx, self.frequencies[j], noise_lvl)
+        for j in range(len(frequencies)):
+            f_start, f_end = self.detec.bandwidth(f, Pxx, frequencies[j], noise_lvl)
             bandwidth = f_end - f_start
-
-            index = np.where(np.isclose(f, self.frequencies[j], atol=0.01))[0]
+            index = np.where(np.isclose(f, frequencies[j], atol=0.01))[0]
 
             parameters.append({
-                        'time': time.strftime('%X'),
-                        'freq': round(self.frequencies[j], 1),
-                        'bandwidth': round(bandwidth, 2),
-                        'power': 10 * np.log10(Pxx[index[0]]),
-                        'snr': 10 * np.log10(Pxx[index[0]]/Pxx[0])
-                    })
+                'time': time.strftime('%X'),
+                'freq': round(frequencies[j], 1),
+                'bandwidth': round(bandwidth, 2),
+                'power': Pxx[index[0]],
+                'snr': 10 * np.log10(Pxx[index[0]]/Pxx[0])
+            })
         parameters_1s.append(parameters)
 
         return parameters_1s, f, Pxx
+
