@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTa
 from PyQt5.QtCore import Qt, QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from RDS import RDS
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
 
 class MiVentana(QWidget):
     def __init__(self):
