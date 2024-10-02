@@ -5,8 +5,9 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTa
 from PyQt5.QtCore import Qt, QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from RDS import RDS
-from pycallgraph import PyCallGraph
+from pycallgraph import PyCallGraph, Config
 from pycallgraph.output import GraphvizOutput
+from pycallgraph import GlobbingFilter
 
 class MiVentana(QWidget):
     def __init__(self):
@@ -82,9 +83,24 @@ class MiVentana(QWidget):
             self.table.setItem(i, 3, snr_item)
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ventana = MiVentana()
-    ventana.show()
-    sys.exit(app.exec_())
+    config = Config()
+    config.trace_filter = GlobbingFilter(include=[
+        'MiVentana.*',
+        'RDS.*',
+        # Añade aquí los módulos o clases que deseas incluir
+    ], exclude=[
+        'PyQt5.*',
+        'matplotlib.*',
+        # Añade aquí los módulos que deseas excluir
+    ])
+
+    graphviz = GraphvizOutput()
+    graphviz.output_file = 'callgraph.png'
+
+    with PyCallGraph(output=graphviz, config=config):
+        app = QApplication(sys.argv)
+        ventana = MiVentana()
+        ventana.show()
+        sys.exit(app.exec_())
 
 
