@@ -47,7 +47,7 @@ class MiVentana(QWidget):
             self.timer.stop()
 
     def actualizar_datos(self):
-        parameters_1s, f, Pxx = self.rds_instance.parameter()
+        parameters_1s, f, Pxx, self.bandwdith_list = self.rds_instance.parameter()
         self.generar_grafica(f, Pxx)
         self.actualizar_tabla(parameters_1s[0])
 
@@ -55,8 +55,10 @@ class MiVentana(QWidget):
         self.canvas.figure.clf()
         ax = self.canvas.figure.add_subplot(111)
         ax.semilogy(f, Pxx)
+        for freq in range(len(self.bandwdith_list)):
+            ax.axvline(self.bandwdith_list[freq], c='red', linestyle='--')
         ax.set_title('Densidad espectral de potencia')
-        ax.set_xlabel('Frecuencia (Hz)')
+        ax.set_xlabel('Frecuencia (MHz)')
         ax.set_ylabel('PSD (dB/Hz)')
         ax.grid(True)
         self.canvas.draw()
@@ -64,13 +66,13 @@ class MiVentana(QWidget):
     def actualizar_tabla(self, data):
         self.table.setRowCount(len(data))
         for i, row in enumerate(data):
-            freq_item = QTableWidgetItem(f"{row['freq']:.2f} Hz")
+            freq_item = QTableWidgetItem(f"{row['freq']:.2f} MHz")
             freq_item.setTextAlignment(Qt.AlignCenter)
             
-            bandwidth_item = QTableWidgetItem(f"{row['bandwidth']:.2f} Hz")
+            bandwidth_item = QTableWidgetItem(f"{row['bandwidth']:.2f} MHz")
             bandwidth_item.setTextAlignment(Qt.AlignCenter)
             
-            power_item = QTableWidgetItem(f"{row['power']:.3e} dB/Hz")
+            power_item = QTableWidgetItem(f"{row['power']:.3e} V**2/Hz")
             power_item.setTextAlignment(Qt.AlignCenter)
             
             snr_item = QTableWidgetItem(f"{row['snr']:.2f} dB")
@@ -86,6 +88,9 @@ if __name__ == '__main__':
     config.trace_filter = GlobbingFilter(include=[
         'MiVentana.*',
         'RDS.*',
+        'detection.*',
+        'monitor.*',
+        'processing.*'
     ], exclude=[
         'PyQt5.*',
         'matplotlib.*',
