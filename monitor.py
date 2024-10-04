@@ -2,9 +2,6 @@ from hackrf import HackRF
 import numpy as np
 from typing import Union, Literal
 from gcpds.filters import frequency as flt
-import h5py
-import os
-
 
 ########################################################################
 class Scanning:
@@ -126,67 +123,27 @@ class Scanning:
 
             match method:
 
-                case 'mean':  # Calculate the mean overlap and concatenate the remaining samples
+                case 'mean':
                     concatenated_samples = samples[0]['samples']
                     for sample in samples[1:]:
                         current_samples = sample['samples']
                         concatenated_samples[-self.overlap_size:] = (concatenated_samples[-self.overlap_size:] + current_samples[:self.overlap_size]) / 2
                         concatenated_samples = np.concatenate((concatenated_samples, current_samples[self.overlap_size:]))
 
-                case 'half':  # Concatenate samples with half overlap
+                case 'half':
                     concatenated_samples = samples[0]['samples']
                     for sample in samples[1:]:
                         current_samples = sample['samples']
                         concatenated_samples = np.concatenate((concatenated_samples[:int(-self.overlap_size/2)], current_samples[int(self.overlap_size/2):]))
 
-                case 'drop_first':  # Drop the first part of the overlapping samples and concatenate the remaining samples.
+                case 'drop_first':
                     concatenated_samples = samples[0]['samples']
                     for sample in samples[1:]:
                         concatenated_samples = np.concatenate((concatenated_samples[:-self.overlap_size], sample['samples']))
 
-                case 'drop_second':  # Drop the second part of the overlapping samples and concatenate the remaining samples.
+                case 'drop_second':
                     concatenated_samples = samples[0]['samples']
                     for sample in samples[1:]:
                         concatenated_samples = np.concatenate((concatenated_samples, sample['samples'][self.overlap_size:]))
 
             return concatenated_samples
-
-
-
-    # ----------------------------------------------------------------------
-    def read(self):
-        """"""
-
-
-    # ----------------------------------------------------------------------
-    def write(self, start: int=200e6, end: int=300e6, overlap: int=1000000, time_to_read: float=0.01, type_save: str='npy'):
-        """
-        Method to perform scanning and save the data.
-        
-        Parameters
-        ----------
-        start : float, optional
-            Starting frequency in Hz (default is 88e6).
-        end : float, optional
-            Ending frequency in Hz (default is 128e6).
-        time_to_read : float, optional
-            Duration of time to read samples in seconds (default is 0.01).
-        type_save : str, optional
-            Format to save the samples (default is 'npy').
-        """
-        self.overlap = overlap
-        self.samples_to_read = int(self.hackrf.sample_rate * time_to_read)
-        self.overlap_size = int(self.overlap * time_to_read)
-
-        wide_samples = self.scan(start, end)
-
-        samples = self.concatenate(wide_samples, 'mean')
-
-        if not os.path.exists('database'):
-            os.makedirs('database')
-
-        if type_save == 'npy':
-            np.save(os.path.join('database', f'Samples {start/1e6} and {end/1e6}MHz with time to read {time_to_read}s and {overlap}MHz overlap.npy'), samples)
-        elif type_save == 'h5':
-            with h5py.File(os.path.join('database', f'Samples {start/1e6} and {end/1e6}MHz with time to read {time_to_read}s.npy and {overlap}MHz overlap.h5'), 'w') as hf:
-                hf.create_dataset('samples', data=samples)

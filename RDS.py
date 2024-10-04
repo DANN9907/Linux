@@ -1,9 +1,6 @@
 import time
-import threading
 import numpy as np
-import pandas as pd 
-import matplotlib.pyplot as plt
-#from monitor import Scanning
+from monitor import Scanning
 from processing import Processing
 from detection import Detection
 
@@ -15,7 +12,7 @@ class RDS():
                  sample_rate: float = 20e6,
                  overlap: int = 0,
                  time_to_read: float = 1,):
-        #self.scan = Scanning(vga_gain=vga_gain, lna_gain=lna_gain, sample_rate=sample_rate, overlap=overlap, time_to_read=time_to_read)
+        # self.scan = Scanning(vga_gain=vga_gain, lna_gain=lna_gain, sample_rate=sample_rate, overlap=overlap, time_to_read=time_to_read)
         self.pros = Processing()
         self.detec = Detection()
         self.excel_file = 'Hoja de cálculo sin título (1).xlsx'
@@ -34,19 +31,14 @@ class RDS():
         time_to_read : float, optional
             Duration of time to read samples in seconds (default is 1).
         """
-
-    #def save_to_excel(self, df, sheet_name='Hoja 1'):
-        #df = pd.DataFrame([df])  # Convertir el dato en un DataFrame de pandas
-        #try:
-            #with pd.ExcelWriter(self.excel_file, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
-                #df.to_excel(writer, sheet_name=sheet_name, index=False, header=False, startrow=writer.sheets[sheet_name].max_row)
-        #except FileNotFoundError:
-            #df.to_excel(self.excel_file, sheet_name=sheet_name, index=False)
-
-    def parameter(self, hours_to_scan: int = 1, city: str = 'Manizales'):
+        
+    def parameter(self, city: str = 'Manizales'):
         frequencies = self.detec.broadcasters(city)
         parameters_1s = []
         parameters = []
+
+        # wide_samples = self.scan.scan(88e6, 108e6)
+        # samples = self.scan.scan(wide_samples, 'mean')
         
         sample_index = np.random.randint(0, 30)
         samples = np.load(f'muestras_guardadas/Samples 88 and 108MHz, time to read 0.01s, sample #{sample_index}.npy')

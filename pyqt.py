@@ -1,5 +1,4 @@
 import sys
-import numpy as np
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import Qt, QTimer
@@ -30,7 +29,7 @@ class MiVentana(QWidget):
         self.canvas = FigureCanvas(plt.Figure(figsize=(10, 5)))
         layout_principal.addWidget(self.canvas)
 
-        self.table = QTableWidget(9, 4)  # Assuming 9 rows for 9 stations and 4 data columns
+        self.table = QTableWidget(9, 4)
         self.table.setHorizontalHeaderLabels(['Frecuencia', 'Bandwidth', 'Max Power', 'SNR'])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         layout_principal.addWidget(self.table)
@@ -41,7 +40,7 @@ class MiVentana(QWidget):
 
     def iniciar_actualizacion(self):
         if not self.timer.isActive():
-            self.timer.start(5000)  # Update every 5 seconds
+            self.timer.start(5000)  
 
     def detener_actualizacion(self):
         if self.timer.isActive():
@@ -50,7 +49,7 @@ class MiVentana(QWidget):
     def actualizar_datos(self):
         parameters_1s, f, Pxx = self.rds_instance.parameter()
         self.generar_grafica(f, Pxx)
-        self.actualizar_tabla(parameters_1s[0])  # Assuming parameters_1s is a list of lists of dictionaries
+        self.actualizar_tabla(parameters_1s[0])
 
     def generar_grafica(self, f, Pxx):
         self.canvas.figure.clf()
@@ -87,11 +86,9 @@ if __name__ == '__main__':
     config.trace_filter = GlobbingFilter(include=[
         'MiVentana.*',
         'RDS.*',
-        # Añade aquí los módulos o clases que deseas incluir
     ], exclude=[
         'PyQt5.*',
         'matplotlib.*',
-        # Añade aquí los módulos que deseas excluir
     ])
 
     graphviz = GraphvizOutput()
