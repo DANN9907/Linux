@@ -47,7 +47,7 @@ class RDS():
         f, Pxx = self.pros.welch(samples, fs=20e6)
         f = np.linspace(88, 108, len(Pxx))
 
-        _, _, noise_lvl, _ = self.detec.power_based_detection(f, Pxx)
+        _, _, _, noise_lvl = self.detec.power_based_detection(f, Pxx)
 
         for j in range(len(frequencies)):
             f_start, f_end = self.detec.bandwidth(f, Pxx, frequencies[j], noise_lvl)
