@@ -36,6 +36,7 @@ class RDS():
         frequencies = self.detec.broadcasters(city)
         parameters_1s = []
         parameters = []
+        bandwidth_list = []
 
         # wide_samples = self.scan.scan(88e6, 108e6)
         # samples = self.scan.scan(wide_samples, 'mean')
@@ -51,6 +52,8 @@ class RDS():
         for j in range(len(frequencies)):
             f_start, f_end = self.detec.bandwidth(f, Pxx, frequencies[j], noise_lvl)
             bandwidth = f_end - f_start
+            bandwidth_list.append(f_start)
+            bandwidth_list.append(f_end)
             index = np.where(np.isclose(f, frequencies[j], atol=0.01))[0]
 
             parameters.append({
@@ -62,5 +65,5 @@ class RDS():
             })
         parameters_1s.append(parameters)
 
-        return parameters_1s, f, Pxx
+        return parameters_1s, f, Pxx, bandwidth_list
 
