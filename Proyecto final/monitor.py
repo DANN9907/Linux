@@ -147,3 +147,6 @@ class Scanning:
                         concatenated_samples = np.concatenate((concatenated_samples, sample['samples'][self.overlap_size:]))
 
             return concatenated_samples
+        
+scan = Scanning(vga_gain=-1)
+samples = scan.scan(88e6, 108e6)
